@@ -2,6 +2,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+const GLuint WIDTH = 800, HEIGHT = 600;
+
 void processInput(GLFWwindow *window)
 {
     if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE))
@@ -18,9 +20,8 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glViewport(0, 0, 800, 600);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -28,6 +29,11 @@ int main()
         return -1;
     }
     glfwMakeContextCurrent(window);
+
+    // Define the viewport dimensions
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
 
     while(!glfwWindowShouldClose(window))
     {
