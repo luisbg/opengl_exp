@@ -2,6 +2,12 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+void processInput(GLFWwindow *window)
+{
+    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE))
+        glfwSetWindowShouldClose(window, true);
+}
+
 int main()
 {
     std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
@@ -25,6 +31,8 @@ int main()
 
     while(!glfwWindowShouldClose(window))
     {
+	processInput(window);
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
