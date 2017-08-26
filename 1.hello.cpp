@@ -28,7 +28,7 @@ const GLchar* fragmentShaderSource = "#version 330 core\n"
 
 int main()
 {
-    unsigned int VBO, VAO;
+    GLuint VBO, VAO;
 
     std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
 
@@ -60,25 +60,25 @@ int main()
 
     // Build our shader program
     // Vertex shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    GLint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
     glCompileShader(vertexShader);
 
     // Fragment shader
-    unsigned int fragmentShader;
+    GLint fragmentShader;
     fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
     glCompileShader(fragmentShader);
 
     // Link shaders
-    unsigned int shaderProgram = glCreateProgram();
+    GLint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    float triangle_vertices[] = {
+    GLfloat triangle_vertices[] = {
         -0.5f, 0.5f, 0.0f,
         0.5f, 0.5f, 0.0f,
         0.0f, -0.5f, 0.0f
@@ -96,7 +96,7 @@ int main()
                  GL_STATIC_DRAW);
 
     // Then set the vertex attributes pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -104,7 +104,7 @@ int main()
 
     while(!glfwWindowShouldClose(window))
     {
-        // rendering commands here
+        // Rendering commands here
         glClearColor(0.0f, 0.0f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
@@ -116,7 +116,7 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
 
-	// swap back buffer to front, and check events
+        // Swap back buffer to front, and check events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
