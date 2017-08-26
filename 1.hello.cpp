@@ -4,10 +4,10 @@
 
 const GLuint WIDTH = 800, HEIGHT = 600;
 
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_ESCAPE))
-        glfwSetWindowShouldClose(window, true);
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
 int main()
@@ -30,6 +30,8 @@ int main()
     }
     glfwMakeContextCurrent(window);
 
+    glfwSetKeyCallback(window, processInput);
+
     // Define the viewport dimensions
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
@@ -37,9 +39,6 @@ int main()
 
     while(!glfwWindowShouldClose(window))
     {
-	// input
-	processInput(window);
-
         // rendering commands here
         glClearColor(0.0f, 0.0f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
