@@ -53,6 +53,10 @@ int main()
     glewExperimental = GL_TRUE;
     glewInit();
 
+    int numAttributes;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &numAttributes);
+    std::cout << "Maximum num of vertex attributes supported: " << numAttributes << std::endl;
+
     // Define the viewport dimensions
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
