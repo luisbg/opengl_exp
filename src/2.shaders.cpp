@@ -104,6 +104,12 @@ int main()
         ourShader.use();
         glBindVertexArray(VAO);
 
+        GLfloat timeValue = glfwGetTime();
+        GLfloat x_offset = (sin(timeValue) / 3.0f);
+        GLfloat y_offset = (cos(timeValue) / 3.0f);
+        glUniform1f(glGetUniformLocation(ourShader.ID, "xOffset"), x_offset);
+        glUniform1f(glGetUniformLocation(ourShader.ID, "yOffset"), y_offset);
+
         // Draw our triangle
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glBindVertexArray(0);
