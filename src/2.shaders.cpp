@@ -11,19 +11,23 @@ void processInput(GLFWwindow *window, int key, int scancode, int action, int mod
 }
 
 const GLchar* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
+"layout (location = 0) in vec3 aPos;\n"  // position variable has attribute position 0
 "\n"
+"out vec4 vertexColor;\n" // specify a color output to the fragment shader
 "void main()\n"
 "{\n"
-"    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"    gl_Position = vec4(aPos, 1.0);\n" // directly give a vec3 to vec4's constructor
+"    vertexColor = vec4(0.7, 0.0, 0.0, 1.0);\n" // set the output variable to a red color
 "}\0";
 
 const GLchar* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
 "\n"
+"in vec4 vertexColor;\n" // the input variable from vertex shader (same name and type)
+"\n"
 "void main()\n"
 "{\n"
-"    FragColor = vec4(0.0f, 0.0f, 0.7f, 1.0f);\n"
+"    FragColor = vertexColor;\n"
 "}\0";
 
 int main()
