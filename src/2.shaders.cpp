@@ -13,20 +13,23 @@ void processInput(GLFWwindow *window, int key, int scancode, int action, int mod
 
 const GLchar* vertexShaderSource = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"  // position variable has attribute position 0
+"layout (location = 1) in vec3 aColor;\n" // the color variable has attribute position 1
+"\n"
+"out vec3 ourColor;\n" // output a color to the fragment shader
 "\n"
 "void main()\n"
 "{\n"
 "    gl_Position = vec4(aPos, 1.0);\n" // directly give a vec3 to vec4's constructor
+"    ourColor = aColor;\n" // set ourColor to the input color we got from the vertex data
 "}\0";
 
 const GLchar* fragmentShaderSource = "#version 330 core\n"
 "out vec4 FragColor;\n"
-"\n"
-"uniform vec4 ourColor;\n" // we set this variable in the OpenGL code.
+"in vec3 ourColor;\n"
 "\n"
 "void main()\n"
 "{\n"
-"    FragColor = ourColor;\n"
+"    FragColor = vec4(ourColor, 1.0);\n"
 "}\0";
 
 int main()
@@ -102,9 +105,10 @@ int main()
     glDeleteShader(fragmentShader);
 
     GLfloat triangle_vertices[] = {
-        -0.5f, 0.5f, 0.0f,
-        0.5f, 0.5f, 0.0f,
-        0.0f, -0.5f, 0.0f
+        // positions         // colors
+        -0.5f, 0.5f, 0.0f,  1.0f, 0.5f, 0.0f,   // top left
+        0.5f, 0.5f, 0.0f,  0.0f, 1.0f, 1.0f,   // top right
+        0.0f,  -0.5f, 0.0f,  1.0f, 0.0f, 1.0f    // bottom
     };
 
     // Bind vertex array object, and set vertex buffer(s) and attribute pointer(s)
@@ -119,8 +123,14 @@ int main()
                  GL_STATIC_DRAW);
 
     // Then set the vertex attributes pointers
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
+
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat),
+                          (GLvoid*)(3* sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -134,13 +144,6 @@ int main()
         // Use our shader program when we want to render an object
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-
-        // Update the uniform color
-        float timeValue = glfwGetTime();
-        float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-        int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-        glUseProgram(shaderProgram);
-        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 
         // Draw our triangle
         glDrawArrays(GL_TRIANGLES, 0, 3);
