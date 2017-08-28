@@ -28,7 +28,7 @@ const GLchar* fragmentShaderSource = "#version 330 core\n"
 
 int main()
 {
-    GLuint VBO, VAO;
+    GLuint VBO, VAO, EBO;
 
     std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
 
@@ -97,12 +97,19 @@ int main()
     GLfloat triangle_vertices[] = {
         -0.5f, 0.5f, 0.0f,
         0.5f, 0.5f, 0.0f,
-        0.0f, -0.5f, 0.0f
+        0.5f, -0.5f, 0.0f,
+        -0.5f, -0.5f, 0.0f
+    };
+
+    GLuint triangle_indices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3  // second triangle
     };
 
     // Bind vertex array object, and set vertex buffer(s) and attribute pointer(s)
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
 
@@ -111,12 +118,18 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices,
                  GL_STATIC_DRAW);
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(triangle_indices),
+                 triangle_indices, GL_STATIC_DRAW);
+
     // Then set the vertex attributes pointers
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     while(!glfwWindowShouldClose(window))
     {
@@ -129,7 +142,7 @@ int main()
         glBindVertexArray(VAO);
 
         // Draw our triangle
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         // Swap back buffer to front, and check events
