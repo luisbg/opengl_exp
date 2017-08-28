@@ -1,1 +1,17 @@
 Toy experiments while learning OpenGL
+
+Code written while following learnopengl.com, all props to Joey de Vries.
+
+Dependencies:
+If in debian/ubuntu:
+$ sudo apt-get install python3 ninja-build meson
+$ sudo apt-get install libglew-dev libglfw3-dev
+
+If in fedora:
+$ sudo dnf install ninja-build meson
+$ sudo dnf install glew-devel glfw-devel
+
+Build:
+$ meson builddir && cd builddir
+$ ninja
+$ ./hello
