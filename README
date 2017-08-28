@@ -15,3 +15,6 @@ Build:
 $ meson builddir && cd builddir
 $ ninja
 $ ./hello
+
+
+Run executables from builddir folder, they might depend on external files.

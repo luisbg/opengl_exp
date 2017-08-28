@@ -3,6 +3,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <shader.h>
+
 const GLuint WIDTH = 800, HEIGHT = 600;
 
 void processInput(GLFWwindow *window, int key, int scancode, int action, int mode)
@@ -10,27 +12,6 @@ void processInput(GLFWwindow *window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
-
-const GLchar* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"  // position variable has attribute position 0
-"layout (location = 1) in vec3 aColor;\n" // the color variable has attribute position 1
-"\n"
-"out vec3 ourColor;\n" // output a color to the fragment shader
-"\n"
-"void main()\n"
-"{\n"
-"    gl_Position = vec4(aPos, 1.0);\n" // directly give a vec3 to vec4's constructor
-"    ourColor = aColor;\n" // set ourColor to the input color we got from the vertex data
-"}\0";
-
-const GLchar* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"in vec3 ourColor;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    FragColor = vec4(ourColor, 1.0);\n"
-"}\0";
 
 int main()
 {
@@ -69,40 +50,7 @@ int main()
     glViewport(0, 0, width, height);
 
     // Build our shader program
-    // Vertex shader
-    GLint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // Check vertex shader for compile time errors
-    GLint success;
-    GLchar infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED: " << infoLog << std::endl;
-    }
-
-    // Fragment shader
-    GLint fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // Check fragment shader for compile time errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED: " << infoLog << std::endl;
-    }
-
-    // Link shaders
-    GLint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    Shader ourShader("../src/2.shader.vs", "../src/2.shader.fs");
 
     GLfloat triangle_vertices[] = {
         // positions         // colors
@@ -142,7 +90,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Use our shader program when we want to render an object
-        glUseProgram(shaderProgram);
+        ourShader.use();
         glBindVertexArray(VAO);
 
         // Draw our triangle
