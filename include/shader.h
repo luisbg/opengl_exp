@@ -101,13 +101,24 @@ private:
     void checkCompileErrors(unsigned int shader, std::string type)
     {
         GLint success;
-        GLchar infoLog[512];
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        if (!success)
+        GLchar infoLog[1024];
+        if (type != "PROGRAM")
         {
-            glGetShaderInfoLog(shader, 512, NULL, infoLog);
-            std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type
-                << "\n" << infoLog << std::endl;
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+            if (!success)
+            {
+                glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+                std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+            }
+                                                                                                             }
+        else
+        {
+            glGetProgramiv(shader, GL_LINK_STATUS, &success);
+            if (!success)
+            {
+                glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+                std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+            }
         }
     }
 };
