@@ -7,10 +7,21 @@
 
 const GLuint WIDTH = 800, HEIGHT = 600;
 
+// process all input
+// query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void processInput(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+    // make sure the viewport matches the new window dimensions; note that width and
+    // height will be significantly larger than specified on retina displays.
+    std::cout << "New window width: " << width << " and height: " << height << std::endl;
+    glViewport(0, 0, width, height);
 }
 
 int main()
@@ -47,7 +58,7 @@ int main()
     // Define the viewport dimensions
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-    glViewport(0, 0, width, height);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Build our shader program
     Shader ourShader("../src/2.shader.vs", "../src/2.shader.fs");
