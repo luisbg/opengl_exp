@@ -6,3 +6,6 @@ executable('hello', 'src/1.hello.cpp', dependencies : [glewdep, glfwdep])
 executable('shaders', 'src/2.shaders.cpp',
 	include_directories : incdir,
 	dependencies : [glewdep, glfwdep])
+executable('textures', 'src/3.textures.cpp',
+	include_directories : incdir,
+	dependencies : [glewdep, glfwdep])
