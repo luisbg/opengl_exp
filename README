@@ -12,7 +12,7 @@ $ sudo dnf install ninja-build meson
 $ sudo dnf install glew-devel glfw-devel
 
 Build:
-$ meson builddir && cd builddir
+$ meson build && cd build
 $ ninja
 $ ./hello
 
