@@ -5,6 +5,9 @@
 
 #include <shader.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 const GLuint WIDTH = 800, HEIGHT = 600;
 
 // process all input
@@ -69,6 +72,29 @@ int main()
         0.5f, 0.5f, 0.0f,  // top right
         0.0f,  -0.5f, 0.0f,  // bottom
     };
+
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    // set the texture wrapping/filtering options (on the currently bound texture object)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    int tex_width, tex_height, nrChannels;
+    unsigned char *data = stbi_load("../img/sky.jpg", &tex_width, &tex_height, &nrChannels, 4);
+    if (data)
+    {
+        std::cout << "Loaded sky image with size: " << tex_width << "," << tex_height << std::endl;
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
 
     // Bind vertex array object, and set vertex buffer(s) and attribute pointer(s)
     glGenVertexArrays(1, &VAO);
