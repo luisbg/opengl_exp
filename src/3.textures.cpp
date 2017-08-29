@@ -67,10 +67,10 @@ int main()
     Shader ourShader("../src/3.texture.vs", "../src/3.texture.fs");
 
     GLfloat triangle_vertices[] = {
-        // positions         // colors
-        -0.5f, 0.5f, 0.0f,  // top left
-        0.5f, 0.5f, 0.0f,  // top right
-        0.0f,  -0.5f, 0.0f,  // bottom
+        // positions       // colors         // texture coords
+        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,  // top left
+        0.5f, 0.5f, 0.0f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f,  // top right
+        0.0f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 0.9f   // bottom
     };
 
     unsigned int texture;
@@ -109,8 +109,15 @@ int main()
 
     // Then set the vertex attributes pointers
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    // color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // texture coord attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -120,6 +127,9 @@ int main()
         // Rendering commands here
         glClearColor(0.0f, 0.0f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        // Bind our texture
+        glBindTexture(GL_TEXTURE_2D, texture);
 
         // Use our shader program when we want to render an object
         ourShader.use();
@@ -133,6 +143,10 @@ int main()
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    // Deallocate all resources once they've outlived their purpose:
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
 
     glfwTerminate();
 
