@@ -9,3 +9,6 @@ executable('shaders', 'src/2.shaders.cpp',
 executable('textures', 'src/3.textures.cpp',
 	include_directories : incdir,
 	dependencies : [glewdep, glfwdep])
+executable('transformations', 'src/4.transformations.cpp',
+	include_directories : incdir,
+	dependencies : [glewdep, glfwdep])
