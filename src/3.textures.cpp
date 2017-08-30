@@ -68,9 +68,9 @@ int main()
 
     GLfloat triangle_vertices[] = {
         // positions       // colors         // texture coords
-        -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  // top left
-        0.5f, 0.5f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f, 0.0f,  // top right
-        0.0f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.5f, 0.9f   // bottom
+        -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,  // top left
+        0.5f, 0.5f, 0.0f,  0.0f, 0.0f, 1.0f, 1.0f, 1.0f,  // top right
+        0.0f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.5f, 0.1f   // bottom
     };
 
     unsigned int texture1, texture2;
@@ -85,6 +85,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load("../img/sky.jpg", &tex_width, &tex_height, &nrChannels, 4);
     if (data)
     {
