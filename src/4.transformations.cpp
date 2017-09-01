@@ -3,6 +3,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <shader.h>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -64,7 +68,7 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Build our shader program
-    Shader ourShader("../src/3.texture.vs", "../src/3.texture.fs");
+    Shader ourShader("../src/4.transformations.vs", "../src/4.transformations.fs");
 
     GLfloat triangle_vertices[] = {
         // positions       // colors         // texture coords
@@ -133,6 +137,13 @@ int main()
 
         // Use our shader program when we want to render an object
         ourShader.use();
+
+        glm::mat4 transform;
+        transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
+
+        GLint transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
         glBindVertexArray(VAO);
 
         // Draw our triangle
