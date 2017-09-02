@@ -73,7 +73,10 @@ int main()
         // positions       // texture coords
         -0.5f, 0.5f, 0.0f, 0.0f, 0.0f,  // top left
         0.5f, 0.5f, 0.0f,  1.0f, 0.0f,  // top right
-        0.0f, -0.5f, 0.0f, 0.5f, 0.9f   // bottom
+        0.5f, -0.5f, 0.0f, 0.5f, 0.9f,  // bottom
+        0.5f,  -0.5f, 0.0f, 0.0f, 0.0f,
+        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+        -0.5f, 0.5f, 0.0f,  0.5f, 0.9f,
     };
 
     unsigned int texture;
@@ -159,7 +162,7 @@ int main()
         glBindVertexArray(VAO);
 
         // Draw our triangle
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
 
         // Swap back buffer to front, and check events
