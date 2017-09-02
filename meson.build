@@ -12,3 +12,6 @@ executable('textures', 'src/3.textures.cpp',
 executable('transformations', 'src/4.transformations.cpp',
 	include_directories : incdir,
 	dependencies : [glewdep, glfwdep])
+executable('coordinate_sys', 'src/5.coordinate_sys.cpp',
+	include_directories : incdir,
+	dependencies : [glewdep, glfwdep])
