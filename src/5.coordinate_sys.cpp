@@ -1,5 +1,4 @@
 #include <iostream>
-#include <math.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -71,10 +70,10 @@ int main()
     Shader ourShader("../src/5.coordinate_sys.vs", "../src/5.coordinate_sys.fs");
 
     GLfloat triangle_vertices[] = {
-        // positions       // colors         // texture coords
-        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f,  // top left
-        0.5f, 0.5f, 0.0f,  1.0f, 0.0f, 0.0f, 1.0f, 0.0f,  // top right
-        0.0f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.5f, 0.9f   // bottom
+        // positions       // texture coords
+        -0.5f, 0.5f, 0.0f, 0.0f, 0.0f,  // top left
+        0.5f, 0.5f, 0.0f,  1.0f, 0.0f,  // top right
+        0.0f, -0.5f, 0.0f, 0.5f, 0.9f   // bottom
     };
 
     unsigned int texture;
@@ -99,6 +98,7 @@ int main()
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
+    glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done
 
     // Bind vertex array object, and set vertex buffer(s) and attribute pointer(s)
     glGenVertexArrays(1, &VAO);
@@ -113,17 +113,14 @@ int main()
 
     // Then set the vertex attributes pointers
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
     // texture coord attribute
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // Unbind VAO
     glBindVertexArray(0);
 
     while(!glfwWindowShouldClose(window))
@@ -133,7 +130,9 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // Bind our texture
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
+        glUniform1i(glGetUniformLocation(ourShader.ID, "ourTexture"), 0);
 
         // Use our shader program when we want to render an object
         ourShader.use();
