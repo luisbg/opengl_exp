@@ -32,7 +32,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 int main()
 {
-    GLuint VBO, VAO;
+    GLuint VBO, VAO, EBO;
 
     std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
 
@@ -73,10 +73,12 @@ int main()
         // positions       // texture coords
         -0.5f, 0.5f, 0.0f, 0.0f, 0.0f,  // top left
         0.5f, 0.5f, 0.0f,  1.0f, 0.0f,  // top right
-        0.5f, -0.5f, 0.0f, 0.5f, 0.9f,  // bottom
-        0.5f,  -0.5f, 0.0f, 0.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
-        -0.5f, 0.5f, 0.0f,  0.5f, 0.9f,
+        0.5f, -0.5f, 0.0f, 1.0f, 1.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom left
+    };
+    GLint indices[] = {
+        0, 1, 3,   // first triangle
+        1, 2, 3    // second triangle
     };
 
     unsigned int texture;
@@ -106,6 +108,7 @@ int main()
     // Bind vertex array object, and set vertex buffer(s) and attribute pointer(s)
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
 
@@ -113,6 +116,9 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices,
                  GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // Then set the vertex attributes pointers
     // position attribute
@@ -162,7 +168,7 @@ int main()
         glBindVertexArray(VAO);
 
         // Draw our triangle
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         // Swap back buffer to front, and check events
@@ -173,6 +179,7 @@ int main()
     // Deallocate all resources once they've outlived their purpose:
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
 
     glfwTerminate();
 
