@@ -70,15 +70,17 @@ int main()
     Shader ourShader("../src/5.coordinate_sys.vs", "../src/5.coordinate_sys.fs");
 
     GLfloat triangle_vertices[] = {
-        // positions       // texture coords
-        -0.5f, 0.5f, 0.0f, 0.0f, 0.0f,  // top left
-        0.5f, 0.5f, 0.0f,  1.0f, 0.0f,  // top right
-        0.0f, -0.5f, 0.0f, 0.0f, 1.0f,  // bottom left
-        1.0f, -0.5f, 0.0f, 1.0f, 1.0f,  // bottom right
+        // positions         // texture coords
+        -0.5f, 0.5f, 0.0f,   0.0f, 0.0f,  // top left
+        0.5f, 0.5f, 0.0f,    1.0f, 0.0f,  // top right
+        0.0f, -0.5f, -0.5f,  0.0f, 1.0f,  // bottom
+        0.0f, 0.5f, -1.0f,   1.0f, 1.0f   // back
     };
     GLint indices[] = {
-        0, 1, 2,   // first triangle
-        1, 2, 3    // second triangle
+        0, 1, 2,   // front
+        1, 2, 3,   // right
+        0, 2, 3,   // left
+        0, 1, 3    // back
     };
 
     unsigned int texture;
@@ -135,11 +137,13 @@ int main()
     // We can set this to GL_LINE to use wireframe mode
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+    glEnable(GL_DEPTH_TEST);
+
     while(!glfwWindowShouldClose(window))
     {
         // Rendering commands here
         glClearColor(0.0f, 0.0f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Bind our texture
         glActiveTexture(GL_TEXTURE0);
@@ -154,7 +158,8 @@ int main()
         glm::mat4 view;
         glm::mat4 projection;
 
-        model = glm::rotate(model, glm::radians(-35.0f), glm::vec3(1.0f, 0.7f, 0.0f));
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f),
+                            glm::vec3(0.1f, 1.0f, 0.0f));
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -2.0f));
         projection = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 
@@ -171,7 +176,7 @@ int main()
         glBindVertexArray(VAO);
 
         // Draw our triangle
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         // Swap back buffer to front, and check events
