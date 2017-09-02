@@ -68,7 +68,7 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Build our shader program
-    Shader ourShader("../src/4.transformations.vs", "../src/4.transformations.fs");
+    Shader ourShader("../src/5.coordinate_sys.vs", "../src/5.coordinate_sys.fs");
 
     GLfloat triangle_vertices[] = {
         // positions       // colors         // texture coords
@@ -138,11 +138,24 @@ int main()
         // Use our shader program when we want to render an object
         ourShader.use();
 
-        glm::mat4 transform;
-        transform = glm::translate(transform, glm::vec3(0.0f, 0.17f, 0.0f));
+        // Create transformations
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 projection;
 
-        GLint transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+        model = glm::rotate(model, glm::radians(-35.0f), glm::vec3(1.0f, 0.7f, 0.0f));
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -2.0f));
+        projection = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
+
+        // Retrieve the matrix uniform locations
+        GLint modelLoc = glGetUniformLocation(ourShader.ID, "model");
+        GLint viewLoc  = glGetUniformLocation(ourShader.ID, "view");
+        GLint projectLoc = glGetUniformLocation(ourShader.ID, "projection");
+
+        // Pass them to the shaders
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         glBindVertexArray(VAO);
 
