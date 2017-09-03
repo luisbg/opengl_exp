@@ -134,6 +134,13 @@ int main()
     // Unbind VAO
     glBindVertexArray(0);
 
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f,  0.0f,  0.0f),
+        glm::vec3( 1.0f,  0.0f, -2.5f),
+        glm::vec3(-1.0f,  0.0f, -2.5f),
+        glm::vec3( 2.0f,  0.0f, -5.0f),
+    };
+
     // We can set this to GL_LINE to use wireframe mode
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -153,29 +160,37 @@ int main()
         // Use our shader program when we want to render an object
         ourShader.use();
 
-        // Create transformations
-        glm::mat4 model;
         glm::mat4 view;
         glm::mat4 projection;
 
-        model = glm::rotate(model, glm::radians(70.0f), glm::vec3(-0.1f, 1.0f, 0.0f));
         view = glm::translate(view, glm::vec3(0.0f, 0.0f, -2.0f));
         projection = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 
         // Retrieve the matrix uniform locations
-        GLint modelLoc = glGetUniformLocation(ourShader.ID, "model");
         GLint viewLoc  = glGetUniformLocation(ourShader.ID, "view");
         GLint projectLoc = glGetUniformLocation(ourShader.ID, "projection");
 
         // Pass them to the shaders
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         glBindVertexArray(VAO);
+        for(unsigned int i = 0; i < 4; i++)
+        {
+            // Create transformations
+            glm::mat4 model;
+
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 10.0f * i;
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+
+            GLint modelLoc = glGetUniformLocation(ourShader.ID, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+            glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+        }
 
         // Draw our triangle
-        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         // Swap back buffer to front, and check events
