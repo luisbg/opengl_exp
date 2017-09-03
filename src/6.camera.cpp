@@ -172,9 +172,11 @@ int main()
         glm::mat4 view;
         glm::mat4 projection;
 
-        view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
-                           glm::vec3(0.0f, 0.0f, 0.0f),
-                           glm::vec3(0.0f, 1.0f, 0.0f));
+        float radius = 10.0f;
+        float camX = sin(glfwGetTime()) * radius;
+        float camZ = cos(glfwGetTime()) * radius;
+        view = glm::lookAt(glm::vec3(camX, 1.0, camZ), glm::vec3(0.0, 0.0, 0.0),
+                           glm::vec3(0.0, 1.0, 0.0));
         projection = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 
         // Retrieve the matrix uniform locations
