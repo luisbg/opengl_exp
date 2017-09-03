@@ -19,11 +19,15 @@ glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
 
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
+
 // process all input
 // query GLFW whether relevant keys are pressed/released this frame and react accordingly
 void processInput(GLFWwindow *window, int key, int scancode, int action, int mode)
 {
-    float cameraSpeed = 0.1f;
+    float cameraSpeed = 5.0f * deltaTime;
 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
@@ -164,6 +168,11 @@ int main()
 
     while(!glfwWindowShouldClose(window))
     {
+        // per-frame time logic
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+
         // Rendering commands here
         glClearColor(0.0f, 0.0f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
