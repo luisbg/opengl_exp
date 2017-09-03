@@ -11,7 +11,16 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+// screen
 const GLuint WIDTH = 800, HEIGHT = 600;
+
+// camera
+glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 
 // process all input
 // query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -163,7 +172,9 @@ int main()
         glm::mat4 view;
         glm::mat4 projection;
 
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -2.0f));
+        view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
+                           glm::vec3(0.0f, 0.0f, 0.0f),
+                           glm::vec3(0.0f, 1.0f, 0.0f));
         projection = glm::perspective(45.0f, (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 
         // Retrieve the matrix uniform locations
