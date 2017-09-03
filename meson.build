@@ -15,3 +15,6 @@ executable('transformations', 'src/4.transformations.cpp',
 executable('coordinate_sys', 'src/5.coordinate_sys.cpp',
 	include_directories : incdir,
 	dependencies : [glewdep, glfwdep])
+executable('camera', 'src/6.camera.cpp',
+	include_directories : incdir,
+	dependencies : [glewdep, glfwdep])
