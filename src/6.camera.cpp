@@ -110,7 +110,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 int main()
 {
-    GLuint VBO, VBO2, VAO, VAO2, EBO, EBO2;
+    GLuint VBO_T, VAO_T, EBO_T, VBO_F, VAO_F, EBO_F;
 
     std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
 
@@ -152,7 +152,7 @@ int main()
     // Build our shader program
     Shader ourShader("../src/6.camera.vs", "../src/6.camera.fs");
 
-    GLfloat triangle_vertices[] = {
+    GLfloat tetra_vertices[] = {
         // positions         // texture coords
         -0.5f, 0.5f, 0.0f,   0.0f, 0.0f,  // top left
         0.5f, 0.5f, 0.0f,    1.0f, 0.0f,  // top right
@@ -167,7 +167,7 @@ int main()
          100.0f, -0.5f,  100.0f
     };
 
-    GLint indices[] = {
+    GLint tetra_indices[] = {
         0, 1, 2,   // front
         1, 2, 3,   // right
         0, 2, 3,   // left
@@ -204,22 +204,21 @@ int main()
     glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done
 
     // Bind vertex array object, and set vertex buffer(s) and attribute pointer(s)
-    glGenVertexArrays(1, &VAO);
-    glGenVertexArrays(1, &VAO2);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &VBO2);
-    glGenBuffers(1, &EBO);
-    glGenBuffers(1, &EBO2);
+    glGenVertexArrays(1, &VAO_T);
+    glGenBuffers(1, &VBO_T);
+    glGenBuffers(1, &EBO_T);
+    glGenVertexArrays(1, &VAO_F);
+    glGenBuffers(1, &VBO_F);
+    glGenBuffers(1, &EBO_F);
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(VAO_T);
 
     // Copy our vertices array in a buffer for OpenGL to use
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle_vertices), triangle_vertices,
-                 GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_T);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(tetra_vertices), tetra_vertices, GL_STATIC_DRAW);
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_T);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(tetra_indices), tetra_indices, GL_STATIC_DRAW);
 
     // Then set the vertex attributes pointers
     // position attribute
@@ -231,11 +230,11 @@ int main()
     glEnableVertexAttribArray(2);
 
     // Set floor
-    glBindVertexArray(VAO2);
+    glBindVertexArray(VAO_F);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_F);
     glBufferData(GL_ARRAY_BUFFER, sizeof(floor_vertices), floor_vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO_F);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floor_indices), floor_indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -290,7 +289,7 @@ int main()
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
-        glBindVertexArray(VAO);
+        glBindVertexArray(VAO_T);
         for(unsigned int i = 0; i < 4; i++)
         {
             // Create transformations
@@ -303,7 +302,7 @@ int main()
             glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
         }
 
-        glBindVertexArray(VAO2);
+        glBindVertexArray(VAO_F);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
@@ -313,12 +312,12 @@ int main()
     }
 
     // Deallocate all resources once they've outlived their purpose:
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteVertexArrays(1, &VAO2);
-    glDeleteBuffers(1, &VBO);
-    glDeleteBuffers(1, &VBO2);
-    glDeleteBuffers(1, &EBO);
-    glDeleteBuffers(1, &EBO2);
+    glDeleteVertexArrays(1, &VAO_T);
+    glDeleteBuffers(1, &EBO_T);
+    glDeleteBuffers(1, &VBO_T);
+    glDeleteVertexArrays(1, &VAO_F);
+    glDeleteBuffers(1, &VBO_F);
+    glDeleteBuffers(1, &EBO_F);
 
     glfwTerminate();
 
