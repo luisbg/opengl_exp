@@ -150,7 +150,8 @@ int main()
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Build our shader program
-    Shader ourShader("../src/6.camera.vs", "../src/6.camera.fs");
+    Shader tetraShader("../src/6.camera.vs", "../src/6.camera.fs");
+    Shader floorShader("../src/6.camera.vs", "../src/6.camera.fs2");
 
     GLfloat tetra_vertices[] = {
         // positions         // texture coords
@@ -269,10 +270,7 @@ int main()
         // Bind our texture
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
-        glUniform1i(glGetUniformLocation(ourShader.ID, "ourTexture"), 0);
-
-        // Use our shader program when we want to render an object
-        ourShader.use();
+        glUniform1i(glGetUniformLocation(tetraShader.ID, "ourTexture"), 0);
 
         glm::mat4 view;
         glm::mat4 projection;
@@ -281,28 +279,40 @@ int main()
         projection = glm::perspective(glm::radians(fov),
                                       (GLfloat)WIDTH / (GLfloat)HEIGHT, 0.1f, 100.0f);
 
+        // Use our shader program when we want to render an object
+        tetraShader.use();
+
         // Retrieve the matrix uniform locations
-        GLint viewLoc  = glGetUniformLocation(ourShader.ID, "view");
-        GLint projectLoc = glGetUniformLocation(ourShader.ID, "projection");
+        GLint viewLoc  = glGetUniformLocation(tetraShader.ID, "view");
+        GLint projectLoc = glGetUniformLocation(tetraShader.ID, "projection");
 
         // Pass them to the shaders
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(projectLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         glBindVertexArray(VAO_T);
+
+        GLint modelLoc;
         for(unsigned int i = 0; i < 4; i++)
         {
             // Create transformations
             glm::mat4 model;
-
             model = glm::translate(model, cubePositions[i]);
-            GLint modelLoc = glGetUniformLocation(ourShader.ID, "model");
+            modelLoc = glGetUniformLocation(tetraShader.ID, "model");
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
             glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
         }
 
+        floorShader.use();
         glBindVertexArray(VAO_F);
+
+        glm::mat4 model;
+        modelLoc = glGetUniformLocation(floorShader.ID, "model");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(projectLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
