@@ -110,7 +110,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 int main()
 {
-    GLuint VBO, VAO, EBO;
+    GLuint VBO, VBO2, VAO, VAO2, EBO, EBO2;
 
     std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
 
@@ -159,11 +159,24 @@ int main()
         0.0f, -0.5f, -0.5f,  0.0f, 1.0f,  // bottom
         0.0f, 0.5f, -1.0f,   1.0f, 1.0f   // back
     };
+
+    GLfloat floor_vertices[] = {
+        -100.0f, -0.5f, -100.0f,
+        -100.0f, -0.5f,  100.0f,
+         100.0f, -0.5f, -100.0f,
+         100.0f, -0.5f,  100.0f
+    };
+
     GLint indices[] = {
         0, 1, 2,   // front
         1, 2, 3,   // right
         0, 2, 3,   // left
         0, 1, 3    // back
+    };
+
+    GLint floor_indices[] = {
+        0, 1, 2,   // left
+        1, 2, 3,   // right
     };
 
     unsigned int texture;
@@ -192,8 +205,11 @@ int main()
 
     // Bind vertex array object, and set vertex buffer(s) and attribute pointer(s)
     glGenVertexArrays(1, &VAO);
+    glGenVertexArrays(1, &VAO2);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &VBO2);
     glGenBuffers(1, &EBO);
+    glGenBuffers(1, &EBO2);
 
     glBindVertexArray(VAO);
 
@@ -213,6 +229,17 @@ int main()
     // texture coord attribute
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(2);
+
+    // Set floor
+    glBindVertexArray(VAO2);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(floor_vertices), floor_vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(floor_indices), floor_indices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
 
     // Unbind VAO
     glBindVertexArray(0);
@@ -270,16 +297,14 @@ int main()
             glm::mat4 model;
 
             model = glm::translate(model, cubePositions[i]);
-            float angle = 10.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-
             GLint modelLoc = glGetUniformLocation(ourShader.ID, "model");
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
             glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
         }
 
-        // Draw our triangle
+        glBindVertexArray(VAO2);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         // Swap back buffer to front, and check events
@@ -289,8 +314,11 @@ int main()
 
     // Deallocate all resources once they've outlived their purpose:
     glDeleteVertexArrays(1, &VAO);
+    glDeleteVertexArrays(1, &VAO2);
     glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &VBO2);
     glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &EBO2);
 
     glfwTerminate();
 
