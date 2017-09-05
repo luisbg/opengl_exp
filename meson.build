@@ -1,6 +1,8 @@
 project('opengl_experiments', 'cpp')
 glewdep = dependency('glew')
 glfwdep = dependency('glfw3')
+sdldep = dependency('sdl2')
+sdlimagedep = dependency('SDL2_image')
 incdir = include_directories('include')
 executable('hello', 'src/1.hello.cpp', dependencies : [glewdep, glfwdep])
 executable('shaders', 'src/2.shaders.cpp',
@@ -17,4 +19,4 @@ executable('coordinate_sys', 'src/5.coordinate_sys.cpp',
 	dependencies : [glewdep, glfwdep])
 executable('camera', 'src/6.camera.cpp',
 	include_directories : incdir,
-	dependencies : [glewdep, glfwdep])
+	dependencies : [glewdep, glfwdep, sdldep, sdlimagedep])

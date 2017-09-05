@@ -8,8 +8,8 @@
 
 #include <shader.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+#include <SDL.h>
+#include <SDL_image.h>
 
 // screen
 const GLuint WIDTH = 800, HEIGHT = 600;
@@ -122,7 +122,7 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Camera", NULL, NULL);
     if (window == NULL)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -189,19 +189,50 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    int tex_width, tex_height, nrChannels;
-    unsigned char *data = stbi_load("../img/sky.jpg", &tex_width, &tex_height, &nrChannels, 4);
-    if (data)
+    SDL_Surface* tetra_surface = IMG_Load("../img/sky.jpg");
+    if (tetra_surface)
     {
-        std::cout << "Loaded sky image with size: " << tex_width << "," << tex_height << std::endl;
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        GLenum texture_format;
+
+        // Check that the image's width is a power of 2
+        if ((tetra_surface->w & (tetra_surface->w - 1)) != 0)
+            std::cout << "Image width is not a power of 2" << std::endl;
+
+        // Also check if the height is a power of 2
+        if ((tetra_surface->h & (tetra_surface->h - 1)) != 0)
+            std::cout << "Image height is not a power of 2" << std::endl;
+
+        // get the number of channels in the SDL surface
+        GLint nOfColors = tetra_surface->format->BytesPerPixel;
+        if (nOfColors == 4)     // contains an alpha channel
+        {
+            if (tetra_surface->format->Rmask == 0x000000ff)
+                texture_format = GL_RGBA;
+            else
+                texture_format = GL_BGRA;
+        }
+        else if (nOfColors == 3)     // no alpha channel
+        {
+            if (tetra_surface->format->Rmask == 0x000000ff)
+                texture_format = GL_RGB;
+            else
+                texture_format = GL_BGR;
+        }
+        else
+        {
+            std::cout << "the image is not truecolor.." << std::endl;
+        }
+
+        std::cout << "Loaded sky image with size: " << tetra_surface->w << "," << tetra_surface->h << std::endl;
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tetra_surface->w, tetra_surface->h, 0,
+                     texture_format, GL_UNSIGNED_BYTE, tetra_surface->pixels);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
     {
         std::cout << "Failed to load texture" << std::endl;
     }
-    stbi_image_free(data);
     glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done
 
     // Bind vertex array object, and set vertex buffer(s) and attribute pointer(s)
