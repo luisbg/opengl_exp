@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <iostream>
 #include <string.h>
+#include <fstream>
+#include <sstream>
 
 #define ES_WINDOW_RGB           0
 #define ES_WINDOW_ALPHA         1
@@ -27,15 +29,28 @@ typedef struct _context
 } Context;
 
 
-GLuint LoadShader(GLenum type, const char *shaderSrc)
+GLuint LoadShader(GLenum type, const char *shaderPath)
 {
     GLuint shader;
     GLint compiled;
+    std::ifstream shaderFile;
+    const char* shaderSrc;
 
     shader = glCreateShader(type);
 
     if (shader == 0)
         return 0;
+
+    try {
+        shaderFile.open(shaderPath);
+        std::stringstream shaderStream;
+        shaderStream << shaderFile.rdbuf();
+        shaderFile.close();
+
+        shaderSrc = shaderStream.str().c_str();
+    } catch(std::ifstream::failure e) {
+        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
+    }
 
     glShaderSource(shader, 1, &shaderSrc, NULL);
     glCompileShader(shader);
@@ -64,27 +79,13 @@ GLuint LoadShader(GLenum type, const char *shaderSrc)
 
 GLuint Init(Context *contxt)
 {
-    const char* vShaderStr =
-        "attribute vec4 vPosition;    \n"
-        "void main()                  \n"
-        "{                            \n"
-        "   gl_Position = vPosition;  \n"
-        "}                            \n";
-
-    const char* fShaderStr =
-        "precision mediump float;\n"\
-        "void main()                                  \n"
-        "{                                            \n"
-        "  gl_FragColor = vec4 ( 0.0, 0.0, 1.0, 1.0 );\n"
-        "}                                            \n";
-
     GLuint vertexShader;
     GLuint fragmentShader;
     GLuint programObject;
     GLint linked;
 
-    vertexShader = LoadShader(GL_VERTEX_SHADER, vShaderStr);
-    fragmentShader = LoadShader(GL_FRAGMENT_SHADER, fShaderStr);
+    vertexShader = LoadShader(GL_VERTEX_SHADER, "../src/7.opengles.vs");
+    fragmentShader = LoadShader(GL_FRAGMENT_SHADER, "../src/7.opengles.fs");
 
     programObject = glCreateProgram();
 
