@@ -7,6 +7,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <shader_gles.h>
+
 #define ES_WINDOW_RGB           0
 #define ES_WINDOW_ALPHA         1
 #define ES_WINDOW_DEPTH         2
@@ -27,125 +29,6 @@ typedef struct _context
     EGLSurface  eglSurface;
 
 } Context;
-
-
-GLuint LoadShader(GLenum type, const char *shaderPath)
-{
-    GLuint shader;
-    GLint compiled;
-    std::ifstream shaderFile;
-    const char* shaderSrc;
-
-    shader = glCreateShader(type);
-
-    if (shader == 0)
-        return 0;
-
-    try {
-        shaderFile.open(shaderPath);
-        std::stringstream shaderStream;
-        shaderStream << shaderFile.rdbuf();
-        shaderFile.close();
-
-        shaderSrc = shaderStream.str().c_str();
-    } catch(std::ifstream::failure e) {
-        std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ" << std::endl;
-    }
-
-    glShaderSource(shader, 1, &shaderSrc, NULL);
-    glCompileShader(shader);
-
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-    if (!compiled) {
-        GLint infoLen = 0;
-
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen);
-
-        if (infoLen > 1) {
-            char* infoLog = (char*) malloc (sizeof(char) * infoLen);
-
-            glGetShaderInfoLog(shader, infoLen, NULL, infoLog);
-            std::cout << "Error compiling shader: " << infoLog << std::endl;
-
-            free(infoLog);
-        }
-
-        glDeleteShader(shader);
-        return 0;
-    }
-
-    return shader;
-}
-
-GLuint Init(Context *contxt)
-{
-    GLuint vertexShader;
-    GLuint fragmentShader;
-    GLuint programObject;
-    GLint linked;
-
-    vertexShader = LoadShader(GL_VERTEX_SHADER, "../src/7.opengles.vs");
-    fragmentShader = LoadShader(GL_FRAGMENT_SHADER, "../src/7.opengles.fs");
-
-    programObject = glCreateProgram();
-
-    if (programObject == 0)
-        return 0;
-
-    glAttachShader(programObject, vertexShader);
-    glAttachShader(programObject, fragmentShader);
-
-    // Bind vPosition to attribute 0
-    glBindAttribLocation(programObject, 0, "vPosition" );
-
-    // Link the program
-    glLinkProgram(programObject);
-
-    // Check the link status
-    glGetProgramiv(programObject, GL_LINK_STATUS, &linked);
-
-    if (!linked) {
-        GLint infoLen = 0;
-
-        glGetProgramiv(programObject, GL_INFO_LOG_LENGTH, &infoLen);
-
-        if (infoLen > 1) {
-            char* infoLog = (char *) malloc(sizeof(char) * infoLen);
-
-            glGetProgramInfoLog(programObject, infoLen, NULL, infoLog);
-            std::cout << "Error linking program: " << infoLog << std::endl;
-
-            free (infoLog);
-        }
-
-        glDeleteProgram(programObject);
-        return GL_FALSE;
-    }
-
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-
-    contxt->programObject = programObject;
-
-    return programObject;
-}
-
-void Draw(Context *contxt)
-{
-    GLfloat vVertices[] = { 0.0f,  0.5f, 0.0f,
-                           -0.5f, -0.5f, 0.0f,
-                            0.5f, -0.5f, 0.0f};
-
-    glViewport(0, 0, contxt->width, contxt->height);
-
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glUseProgram(contxt->programObject);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
-    glEnableVertexAttribArray(0);
-
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-}
 
 EGLBoolean WinCreate(Context *contxt, const char *title)
 {
@@ -300,24 +183,33 @@ GLboolean userInterrupt(Context *contxt)
     return userinterrupt;
 }
 
-void esMainLoop(Context *contxt)
-{
-    while (userInterrupt(contxt) == GL_FALSE)
-    {
-        Draw(contxt);
-
-        eglSwapBuffers(contxt->eglDisplay, contxt->eglSurface);
-    }
-}
-
-
 int main(int argc, char *argv[])
 {
-   Context contxt;
+    Context contxt;
+    esCreateWindow (&contxt, "GLES", ES_WINDOW_RGB);
 
-   esCreateWindow (&contxt, "GLES", ES_WINDOW_RGB);
-   if (!Init (&contxt))
-      return 0;
+    Shader ourShader("../src/7.opengles.vs", "../src/7.opengles.fs");
 
-   esMainLoop (&contxt);
+    GLfloat vVertices[] = { 0.0f,  0.5f, 0.0f,
+                           -0.5f, -0.5f, 0.0f,
+                            0.5f, -0.5f, 0.0f};
+
+    glViewport(0, 0, contxt.width, contxt.height);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+    while (userInterrupt(&contxt) == GL_FALSE)
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        ourShader.use();
+
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
+        glEnableVertexAttribArray(0);
+
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        eglSwapBuffers(contxt.eglDisplay, contxt.eglSurface);
+    }
+
+    return 0;
 }
