@@ -44,8 +44,9 @@ typedef struct _context
 
 } Context;
 
-int generateRect(GLfloat **vertices, GLuint **indices)
+int generateRect(float scale, GLfloat **vertices, GLuint **indices)
 {
+   int i;
    int numVertices = 4;
    int numIndices = 6;
 
@@ -61,6 +62,10 @@ int generateRect(GLfloat **vertices, GLuint **indices)
    {
       *vertices = (GLfloat *) malloc (sizeof(GLfloat) * 3 * numVertices);
       memcpy(*vertices, cubeVerts, sizeof(cubeVerts));
+      for (i = 0; i < numVertices * 3; i++)
+      {
+         (*vertices)[i] *= scale;
+      }
    }
 
    if (indices != NULL)
@@ -240,7 +245,7 @@ int main(int argc, char *argv[])
     contxt.programObject = ourShader.get_id();
 
     contxt.positionLoc = glGetAttribLocation(contxt.programObject, "v_position");
-    contxt.numIndices = generateRect(&contxt.vertices, &contxt.indices);
+    contxt.numIndices = generateRect(0.8, &contxt.vertices, &contxt.indices);
 
     glViewport(0, 0, contxt.width, contxt.height);
 
