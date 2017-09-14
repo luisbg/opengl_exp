@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include <shader_gles.h>
+#include <matrix_gles.h>
 
 #define ES_WINDOW_RGB           0
 #define ES_WINDOW_ALPHA         1
@@ -28,6 +29,10 @@ typedef struct _context
     GLuint programObject;
 
     GLint positionLoc;
+
+    GLint mvpLoc;
+    Matrix mvpMatrix;
+    GLfloat angle;
 
     GLfloat *vertices;
     GLuint *indices;
@@ -236,9 +241,30 @@ GLboolean userInterrupt(Context *contxt)
     return userinterrupt;
 }
 
+void updateRect(Context* contxt)
+{
+    Matrix perspective;
+    Matrix modelview;
+    float aspect;
+
+    contxt->angle += 2;
+    if (contxt->angle >= 360.0f)
+        contxt->angle -= 360.0f;
+
+    aspect = (GLfloat) contxt->width / (GLfloat) contxt->height;
+
+    MatrixLoadIdentity(&perspective);
+    Perspective(&perspective, 60.0f, aspect, 1.0f, 20.0f);
+    MatrixLoadIdentity(&modelview);
+    Translate(&modelview, 0.0, 0.0, -2.0);
+    Rotate(&modelview, contxt->angle, 1.0, 0.0, 1.0);
+    MatrixMultiply(&contxt->mvpMatrix, &modelview, &perspective);
+}
+
 int main(int argc, char *argv[])
 {
     Context contxt;
+
     esCreateWindow (&contxt, "GLES", ES_WINDOW_RGB);
 
     Shader ourShader("../src/9.rotate_gles.vs", "../src/9.rotate_gles.fs");
@@ -246,6 +272,8 @@ int main(int argc, char *argv[])
 
     contxt.positionLoc = glGetAttribLocation(contxt.programObject, "v_position");
     contxt.numIndices = generateRect(0.8, &contxt.vertices, &contxt.indices);
+    contxt.mvpLoc = glGetUniformLocation(contxt.programObject, "u_mvpMatrix");
+    contxt.angle = 45.0f;
 
     glViewport(0, 0, contxt.width, contxt.height);
 
@@ -253,11 +281,15 @@ int main(int argc, char *argv[])
     {
         glClear ( GL_COLOR_BUFFER_BIT );
 
+        updateRect(&contxt);
+
         ourShader.use();
 
         glVertexAttribPointer(contxt.positionLoc, 3, GL_FLOAT,
                               GL_FALSE, 3 * sizeof(GLfloat), contxt.vertices);
         glEnableVertexAttribArray (contxt.positionLoc);
+
+        glUniformMatrix4fv(contxt.mvpLoc, 1, GL_FALSE, (GLfloat*) &contxt.mvpMatrix.m[0][0]);
 
         glDrawElements(GL_TRIANGLES, contxt.numIndices, GL_UNSIGNED_INT, contxt.indices);
 
