@@ -27,6 +27,12 @@ typedef struct _context
 {
     GLuint programObject;
 
+    GLint positionLoc;
+
+    GLfloat *vertices;
+    GLuint *indices;
+    int numIndices;
+
     GLint width = 320;
     GLint height = 240;
     Display *x_display;
@@ -37,6 +43,40 @@ typedef struct _context
     EGLSurface  eglSurface;
 
 } Context;
+
+int generateRect(GLfloat **vertices, GLuint **indices)
+{
+   int numVertices = 4;
+   int numIndices = 6;
+
+   GLfloat cubeVerts[] =
+   {
+      -0.5f,  0.5f,  0.0f,
+       0.5f,  0.5f,  0.0f,
+       0.5f, -0.5f,  0.0f,
+      -0.5f,  -0.5f, 0.0f,
+   };
+
+   if (vertices != NULL)
+   {
+      *vertices = (GLfloat *) malloc (sizeof(GLfloat) * 3 * numVertices);
+      memcpy(*vertices, cubeVerts, sizeof(cubeVerts));
+   }
+
+   if (indices != NULL)
+   {
+      GLuint cubeIndices[] =
+      {
+         0, 1, 3,
+         1, 2, 3,
+      };
+
+      *indices = (GLuint *) malloc(sizeof(GLuint) * numIndices);
+      memcpy(*indices, cubeIndices, sizeof(cubeIndices));
+   }
+
+   return numIndices;
+}
 
 EGLBoolean WinCreate(Context *contxt, const char *title)
 {
@@ -197,21 +237,10 @@ int main(int argc, char *argv[])
     esCreateWindow (&contxt, "GLES", ES_WINDOW_RGB);
 
     Shader ourShader("../src/8.vbo_gles.vs", "../src/8.vbo_gles.fs");
+    contxt.programObject = ourShader.get_id();
 
-    GLuint numIndices = 6;
-    GLfloat cubeVerts[] =
-    {
-      -0.5f,  0.5f,  0.0f,
-       0.5f,  0.5f,  0.0f,
-       0.5f, -0.5f,  0.0f,
-      -0.5f,  -0.5f, 0.0f,
-    };
-
-    GLuint cubeIndices[] =
-    {
-         0, 1, 3,
-         1, 2, 3,
-    };
+    contxt.positionLoc = glGetAttribLocation(contxt.programObject, "v_position");
+    contxt.numIndices = generateRect(&contxt.vertices, &contxt.indices);
 
     glViewport(0, 0, contxt.width, contxt.height);
 
@@ -221,10 +250,11 @@ int main(int argc, char *argv[])
 
         ourShader.use();
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), cubeVerts);
-        glEnableVertexAttribArray (0);
+        glVertexAttribPointer(contxt.positionLoc, 3, GL_FLOAT,
+                              GL_FALSE, 3 * sizeof(GLfloat), contxt.vertices);
+        glEnableVertexAttribArray (contxt.positionLoc);
 
-        glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, cubeIndices);
+        glDrawElements(GL_TRIANGLES, contxt.numIndices, GL_UNSIGNED_INT, contxt.indices);
 
         eglSwapBuffers(contxt.eglDisplay, contxt.eglSurface);
     }
