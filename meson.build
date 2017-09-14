@@ -29,3 +29,6 @@ executable('camera', 'src/6.camera.cpp',
 executable('gles', 'src/7.opengles.cpp',
 	include_directories : incdir,
 	dependencies : [glesdep, x11dep, egldep])
+executable('vbo_gles', 'src/8.vbo_gles.cpp',
+	include_directories : incdir,
+	dependencies : [glesdep, x11dep, egldep])

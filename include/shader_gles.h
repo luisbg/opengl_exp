@@ -69,7 +69,7 @@ public:
         glAttachShader(ID, fragment);
 
         // Bind vPosition to attribute 0
-        glBindAttribLocation(ID, 0, "vPosition" );
+        glBindAttribLocation(ID, 0, "v_position");
 
         glLinkProgram(ID);
         // print linking errors if any
@@ -84,6 +84,11 @@ public:
     void use()
     {
         glUseProgram(ID);
+    }
+
+    unsigned int get_id()
+    {
+        return ID;
     }
 
 private:
