@@ -119,9 +119,12 @@ int generateRect(float scale, GLfloat **vertices, GLuint **indices)
     {
        *vertices = (GLfloat *) malloc (sizeof(GLfloat) * 5 * numVertices);
        memcpy(*vertices, quadVerts, sizeof(quadVerts));
-       for (i = 0; i < numVertices * 5; i++)
+       for (i = 0; i < numVertices; i++)
        {
-          (*vertices)[i] *= scale;
+          int pos_x = i * 5;
+          (*vertices)[pos_x] *= scale;
+          (*vertices)[pos_x + 1] *= scale;  // y
+          (*vertices)[pos_x + 2] *= scale;  // z
        }
     }
 
@@ -322,7 +325,7 @@ int main(int argc, char *argv[])
 
     contxt.samplerLoc = glGetUniformLocation(contxt.programObject, "s_texture");
 
-    contxt.numIndices = generateRect(1.0, &contxt.vertices, &contxt.indices);
+    contxt.numIndices = generateRect(1.6, &contxt.vertices, &contxt.indices);
     contxt.mvpLoc = glGetUniformLocation(contxt.programObject, "u_mvpMatrix");
 
     contxt.textureId = createTexture("../img/sky.jpg");
