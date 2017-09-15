@@ -35,3 +35,6 @@ executable('vbo_gles', 'src/8.vbo_gles.cpp',
 executable('rotate_gles', 'src/9.rotate_gles.cpp',
 	include_directories : incdir,
 	dependencies : [glesdep, x11dep, egldep])
+executable('images_gles', 'src/10.images_gles.cpp',
+	include_directories : incdir,
+	dependencies : [glesdep, x11dep, egldep])
