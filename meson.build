@@ -38,3 +38,6 @@ executable('rotate_gles', 'src/9.rotate_gles.cpp',
 executable('images_gles', 'src/10.images_gles.cpp',
 	include_directories : incdir,
 	dependencies : [glesdep, x11dep, egldep, sdldep, sdlimagedep])
+executable('carousel_gles', 'src/11.carousel_gles.cpp',
+	include_directories : incdir,
+	dependencies : [glesdep, x11dep, egldep, sdldep, sdlimagedep])
