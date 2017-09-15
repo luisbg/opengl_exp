@@ -40,8 +40,12 @@ typedef struct _context
     GLint mvpLoc;
     Matrix mvpMatrix;
 
+    GLfloat xOffset;
+    GLfloat yOffset;
+
     GLfloat *vertices;
     GLuint *indices;
+    GLfloat position[2] = {0.0f, 0.0f};
     int numIndices;
 
     GLint width = 1280;
@@ -141,6 +145,12 @@ int generateRect(float scale, GLfloat **vertices, GLuint **indices)
     }
 
     return numIndices;
+}
+
+void moveRect(Context *contxt, float x, float y)
+{
+    contxt->position[0] = x;
+    contxt->position[1] = y;
 }
 
 EGLBoolean WinCreate(Context *contxt, const char *title)
@@ -328,7 +338,11 @@ int main(int argc, char *argv[])
     contxt.numIndices = generateRect(0.6, &contxt.vertices, &contxt.indices);
     contxt.mvpLoc = glGetUniformLocation(contxt.programObject, "u_mvpMatrix");
 
+    contxt.xOffset = glGetUniformLocation(contxt.programObject, "xOffset");
+    contxt.yOffset = glGetUniformLocation(contxt.programObject, "yOffset");
+
     contxt.textureId = createTexture("../img/sky.jpg");
+    moveRect(&contxt, -1.5f, 0.66f);  // Window spans [-2:2],[-1:1] due to Perspective()
 
     glViewport(0, 0, contxt.width, contxt.height);
 
@@ -352,6 +366,9 @@ int main(int argc, char *argv[])
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, contxt.textureId);
+
+        glUniform1f(contxt.xOffset, contxt.position[0]);
+        glUniform1f(contxt.yOffset, contxt.position[1]);
 
         glDrawElements(GL_TRIANGLES, contxt.numIndices, GL_UNSIGNED_INT, contxt.indices);
 
