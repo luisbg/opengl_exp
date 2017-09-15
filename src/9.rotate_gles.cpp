@@ -29,6 +29,10 @@ typedef struct _context
     GLuint programObject;
 
     GLint positionLoc;
+    GLint texCoordLoc;
+
+    GLint samplerLoc;
+    GLuint textureId;
 
     GLint mvpLoc;
     Matrix mvpMatrix;
@@ -49,25 +53,50 @@ typedef struct _context
 
 } Context;
 
+
+GLuint createTexture()
+{
+   GLuint textureId;
+
+   GLubyte pixels[4 * 3] =
+   {
+      255,   0,   0, // Red
+        0, 255,   0, // Green
+        0,   0, 255, // Blue
+      255, 255, 255  // White
+   };
+
+   glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
+
+   glGenTextures(1, &textureId);
+   glBindTexture(GL_TEXTURE_2D, textureId);
+   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+   return textureId;
+}
+
 int generateRect(float scale, GLfloat **vertices, GLuint **indices)
 {
    int i;
    int numVertices = 4;
    int numIndices = 6;
 
-   GLfloat cubeVerts[] =
-   {
-      -0.5f,  0.5f,  0.0f,
-       0.5f,  0.5f,  0.0f,
-       0.5f, -0.5f,  0.0f,
-      -0.5f,  -0.5f, 0.0f,
+   GLfloat quadVerts[] =
+   {  // pos               // tex
+      -0.5f,  0.5f,  0.0f, 0.0f, 0.0f,
+       0.5f,  0.5f,  0.0f, 1.0f, 0.0f,
+       0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+      -0.5f,  -0.5f, 0.0f, 0.0f, 1.0f
    };
 
    if (vertices != NULL)
    {
-      *vertices = (GLfloat *) malloc (sizeof(GLfloat) * 3 * numVertices);
-      memcpy(*vertices, cubeVerts, sizeof(cubeVerts));
-      for (i = 0; i < numVertices * 3; i++)
+      *vertices = (GLfloat *) malloc (sizeof(GLfloat) * 5 * numVertices);
+      memcpy(*vertices, quadVerts, sizeof(quadVerts));
+      for (i = 0; i < numVertices * 5; i++)
       {
          (*vertices)[i] *= scale;
       }
@@ -271,9 +300,15 @@ int main(int argc, char *argv[])
     contxt.programObject = ourShader.get_id();
 
     contxt.positionLoc = glGetAttribLocation(contxt.programObject, "v_position");
+    contxt.texCoordLoc = glGetAttribLocation(contxt.programObject, "a_texCoord");
+
+    contxt.samplerLoc = glGetUniformLocation(contxt.programObject, "s_texture");
+
     contxt.numIndices = generateRect(0.8, &contxt.vertices, &contxt.indices);
     contxt.mvpLoc = glGetUniformLocation(contxt.programObject, "u_mvpMatrix");
     contxt.angle = 45.0f;
+
+    contxt.textureId = createTexture();
 
     glViewport(0, 0, contxt.width, contxt.height);
 
@@ -286,10 +321,17 @@ int main(int argc, char *argv[])
         ourShader.use();
 
         glVertexAttribPointer(contxt.positionLoc, 3, GL_FLOAT,
-                              GL_FALSE, 3 * sizeof(GLfloat), contxt.vertices);
+                              GL_FALSE, 5 * sizeof(GLfloat), contxt.vertices);
+        glVertexAttribPointer(contxt.texCoordLoc, 2, GL_FLOAT,
+                              GL_FALSE, 5 * sizeof(GLfloat), contxt.vertices);
+
         glEnableVertexAttribArray (contxt.positionLoc);
+        glEnableVertexAttribArray (contxt.texCoordLoc);
 
         glUniformMatrix4fv(contxt.mvpLoc, 1, GL_FALSE, (GLfloat*) &contxt.mvpMatrix.m[0][0]);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, contxt.textureId);
 
         glDrawElements(GL_TRIANGLES, contxt.numIndices, GL_UNSIGNED_INT, contxt.indices);
 
