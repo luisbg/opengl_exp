@@ -37,4 +37,4 @@ executable('rotate_gles', 'src/9.rotate_gles.cpp',
 	dependencies : [glesdep, x11dep, egldep])
 executable('images_gles', 'src/10.images_gles.cpp',
 	include_directories : incdir,
-	dependencies : [glesdep, x11dep, egldep])
+	dependencies : [glesdep, x11dep, egldep, sdldep, sdlimagedep])

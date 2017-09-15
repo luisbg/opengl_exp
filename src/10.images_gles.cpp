@@ -7,6 +7,9 @@
 #include <fstream>
 #include <sstream>
 
+#include <SDL.h>
+#include <SDL_image.h>
+
 #include <shader_gles.h>
 #include <matrix_gles.h>
 
@@ -53,28 +56,49 @@ typedef struct _context
 } Context;
 
 
-GLuint createTexture()
+GLuint createTexture(const char *img_file)
 {
     GLuint textureId;
 
-    GLubyte pixels[4 * 3] =
-    {
-       255,   0,   0, // Red
-         0, 255,   0, // Green
-         0,   0, 255, // Blue
-       255, 255, 255  // White
-    };
-
-    glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
-
     glGenTextures(1, &textureId);
     glBindTexture(GL_TEXTURE_2D, textureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    SDL_Surface* img_surface = IMG_Load(img_file);
+    if (img_surface)
+    {
+        GLenum texture_format;
 
-    return textureId;
+        if ((img_surface->w & (img_surface->w - 1)) != 0)
+            std::cout << "Image width is not a power of 2" << std::endl;
+
+        if ((img_surface->h & (img_surface->h - 1)) != 0)
+            std::cout << "Image height is not a power of 2" << std::endl;
+
+        GLint nOfColors = img_surface->format->BytesPerPixel;
+        if (nOfColors == 4)     // contains an alpha channel
+            texture_format = GL_RGBA;
+        else if (nOfColors == 3)     // no alpha channel
+            texture_format = GL_RGB;
+        else
+            std::cout << "the image is not truecolor.." << std::endl;
+
+        std::cout << "Loaded sky image with size: " << img_surface->w << "," << img_surface->h << std::endl;
+
+        glTexImage2D(GL_TEXTURE_2D, 0, texture_format, img_surface->h, img_surface->w, 0,
+                     texture_format, GL_UNSIGNED_BYTE, img_surface->pixels);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+   return textureId;
 }
 
 int generateRect(float scale, GLfloat **vertices, GLuint **indices)
@@ -290,7 +314,7 @@ int main(int argc, char *argv[])
 
     esCreateWindow (&contxt, "GLES", ES_WINDOW_RGB);
 
-    Shader ourShader("../src/9.rotate_gles.vs", "../src/9.rotate_gles.fs");
+    Shader ourShader("../src/10.images_gles.vs", "../src/10.images_gles.fs");
     contxt.programObject = ourShader.get_id();
 
     contxt.positionLoc = glGetAttribLocation(contxt.programObject, "v_position");
@@ -301,7 +325,7 @@ int main(int argc, char *argv[])
     contxt.numIndices = generateRect(1.0, &contxt.vertices, &contxt.indices);
     contxt.mvpLoc = glGetUniformLocation(contxt.programObject, "u_mvpMatrix");
 
-    contxt.textureId = createTexture();
+    contxt.textureId = createTexture("../img/sky.jpg");
 
     glViewport(0, 0, contxt.width, contxt.height);
 
@@ -316,7 +340,7 @@ int main(int argc, char *argv[])
         glVertexAttribPointer(contxt.positionLoc, 3, GL_FLOAT,
                               GL_FALSE, 5 * sizeof(GLfloat), contxt.vertices);
         glVertexAttribPointer(contxt.texCoordLoc, 2, GL_FLOAT,
-                              GL_FALSE, 5 * sizeof(GLfloat), contxt.vertices);
+                              GL_FALSE, 5 * sizeof(GLfloat), &contxt.vertices[3]);
 
         glEnableVertexAttribArray (contxt.positionLoc);
         glEnableVertexAttribArray (contxt.texCoordLoc);
