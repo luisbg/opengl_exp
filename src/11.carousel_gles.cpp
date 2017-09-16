@@ -27,26 +27,31 @@
 #define VERTEX_NORMAL_INDX      1
 #define VERTEX_TEXCOORD0_INDX   2
 
-typedef struct _context
+typedef struct _bitmap
 {
-    GLuint programObject;
-
-    GLint positionLoc;
-    GLint texCoordLoc;
-
-    GLint samplerLoc;
     GLuint textureId;
-
-    GLint mvpLoc;
-    Matrix mvpMatrix;
-
-    GLfloat xOffset;
-    GLfloat yOffset;
 
     GLfloat *vertices;
     GLuint *indices;
     GLfloat position[2] = {0.0f, 0.0f};
     int numIndices;
+
+    GLfloat xOffset;
+    GLfloat yOffset;
+
+    GLint positionLoc;
+    GLint texCoordLoc;
+    GLint samplerLoc;
+    GLint mvpLoc;
+} Bitmap;
+
+typedef struct _context
+{
+    GLuint programObject;
+
+    Matrix mvpMatrix;
+
+    Bitmap *bitmap;
 
     GLint width = 1280;
     GLint height = 720;
@@ -147,10 +152,10 @@ int generateRect(float scale, GLfloat **vertices, GLuint **indices)
     return numIndices;
 }
 
-void moveRect(Context *contxt, float x, float y)
+void moveRect(Bitmap *bitmap, float x, float y)
 {
-    contxt->position[0] = x;
-    contxt->position[1] = y;
+    bitmap->position[0] = x;
+    bitmap->position[1] = y;
 }
 
 EGLBoolean WinCreate(Context *contxt, const char *title)
@@ -306,7 +311,7 @@ GLboolean userInterrupt(Context *contxt)
     return userinterrupt;
 }
 
-void updateRect(Context* contxt)
+void updateRect(Context* contxt, Bitmap *bitmap)
 {
     Matrix perspective;
     Matrix modelview;
@@ -321,6 +326,48 @@ void updateRect(Context* contxt)
     MatrixMultiply(&contxt->mvpMatrix, &modelview, &perspective);
 }
 
+void drawBitmap(Context *contxt, Bitmap *bitmap)
+{
+    glVertexAttribPointer(bitmap->positionLoc, 3, GL_FLOAT, GL_FALSE,
+                          5 * sizeof(GLfloat), bitmap->vertices);
+    glVertexAttribPointer(bitmap->texCoordLoc, 2, GL_FLOAT, GL_FALSE,
+                          5 * sizeof(GLfloat), &bitmap->vertices[3]);
+
+    glEnableVertexAttribArray (bitmap->positionLoc);
+    glEnableVertexAttribArray (bitmap->texCoordLoc);
+
+    glUniformMatrix4fv(bitmap->mvpLoc, 1, GL_FALSE,
+                       (GLfloat*) &contxt->mvpMatrix.m[0][0]);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, bitmap->textureId);
+
+    glUniform1f(bitmap->xOffset, bitmap->position[0]);
+    glUniform1f(bitmap->yOffset, bitmap->position[1]);
+
+    glDrawElements(GL_TRIANGLES, bitmap->numIndices, GL_UNSIGNED_INT, bitmap->indices);
+}
+
+Bitmap* createBitmap(Context *contxt)
+{
+    Bitmap* bitmap = (Bitmap*) malloc(sizeof(Bitmap));
+
+    bitmap->textureId = createTexture("../img/sky.jpg");
+
+    bitmap->positionLoc = glGetAttribLocation(contxt->programObject, "v_position");
+    bitmap->texCoordLoc = glGetAttribLocation(contxt->programObject, "a_texCoord");
+
+    bitmap->samplerLoc = glGetUniformLocation(contxt->programObject, "s_texture");
+
+    bitmap->numIndices = generateRect(0.6, &bitmap->vertices, &bitmap->indices);
+    bitmap->mvpLoc = glGetUniformLocation(contxt->programObject, "u_mvpMatrix");
+
+    bitmap->xOffset = glGetUniformLocation(contxt->programObject, "xOffset");
+    bitmap->yOffset = glGetUniformLocation(contxt->programObject, "yOffset");
+
+   return bitmap;
+}
+
 int main(int argc, char *argv[])
 {
     Context contxt;
@@ -330,19 +377,9 @@ int main(int argc, char *argv[])
     Shader ourShader("../src/11.carousel_gles.vs", "../src/11.carousel_gles.fs");
     contxt.programObject = ourShader.get_id();
 
-    contxt.positionLoc = glGetAttribLocation(contxt.programObject, "v_position");
-    contxt.texCoordLoc = glGetAttribLocation(contxt.programObject, "a_texCoord");
+    contxt.bitmap = createBitmap(&contxt);
 
-    contxt.samplerLoc = glGetUniformLocation(contxt.programObject, "s_texture");
-
-    contxt.numIndices = generateRect(0.6, &contxt.vertices, &contxt.indices);
-    contxt.mvpLoc = glGetUniformLocation(contxt.programObject, "u_mvpMatrix");
-
-    contxt.xOffset = glGetUniformLocation(contxt.programObject, "xOffset");
-    contxt.yOffset = glGetUniformLocation(contxt.programObject, "yOffset");
-
-    contxt.textureId = createTexture("../img/sky.jpg");
-    moveRect(&contxt, -1.5f, 0.66f);  // Window spans [-2:2],[-1:1] due to Perspective()
+    moveRect(contxt.bitmap, -1.5f, 0.66f);  // Window spans [-2:2],[-1:1] due to Perspective()
 
     glViewport(0, 0, contxt.width, contxt.height);
 
@@ -350,27 +387,11 @@ int main(int argc, char *argv[])
     {
         glClear ( GL_COLOR_BUFFER_BIT );
 
-        updateRect(&contxt);
+        updateRect(&contxt, contxt.bitmap);
 
         ourShader.use();
 
-        glVertexAttribPointer(contxt.positionLoc, 3, GL_FLOAT,
-                              GL_FALSE, 5 * sizeof(GLfloat), contxt.vertices);
-        glVertexAttribPointer(contxt.texCoordLoc, 2, GL_FLOAT,
-                              GL_FALSE, 5 * sizeof(GLfloat), &contxt.vertices[3]);
-
-        glEnableVertexAttribArray (contxt.positionLoc);
-        glEnableVertexAttribArray (contxt.texCoordLoc);
-
-        glUniformMatrix4fv(contxt.mvpLoc, 1, GL_FALSE, (GLfloat*) &contxt.mvpMatrix.m[0][0]);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, contxt.textureId);
-
-        glUniform1f(contxt.xOffset, contxt.position[0]);
-        glUniform1f(contxt.yOffset, contxt.position[1]);
-
-        glDrawElements(GL_TRIANGLES, contxt.numIndices, GL_UNSIGNED_INT, contxt.indices);
+        drawBitmap(&contxt, contxt.bitmap);
 
         eglSwapBuffers(contxt.eglDisplay, contxt.eglSurface);
     }
