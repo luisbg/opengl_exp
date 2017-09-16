@@ -6,6 +6,7 @@
 #include <string.h>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -51,7 +52,7 @@ typedef struct _context
 
     Matrix mvpMatrix;
 
-    Bitmap *bitmap;
+    std::vector<Bitmap*> bmaps;
 
     GLint width = 1280;
     GLint height = 720;
@@ -348,11 +349,11 @@ void drawBitmap(Context *contxt, Bitmap *bitmap)
     glDrawElements(GL_TRIANGLES, bitmap->numIndices, GL_UNSIGNED_INT, bitmap->indices);
 }
 
-Bitmap* createBitmap(Context *contxt)
+Bitmap* createBitmap(Context *contxt, const char *img_file)
 {
     Bitmap* bitmap = (Bitmap*) malloc(sizeof(Bitmap));
 
-    bitmap->textureId = createTexture("../img/sky.jpg");
+    bitmap->textureId = createTexture(img_file);
 
     bitmap->positionLoc = glGetAttribLocation(contxt->programObject, "v_position");
     bitmap->texCoordLoc = glGetAttribLocation(contxt->programObject, "a_texCoord");
@@ -377,9 +378,16 @@ int main(int argc, char *argv[])
     Shader ourShader("../src/11.carousel_gles.vs", "../src/11.carousel_gles.fs");
     contxt.programObject = ourShader.get_id();
 
-    contxt.bitmap = createBitmap(&contxt);
+    contxt.bmaps.push_back(createBitmap(&contxt, "../img/sky.jpg"));
+    contxt.bmaps.push_back(createBitmap(&contxt, "../img/glitch.jpg"));
+    contxt.bmaps.push_back(createBitmap(&contxt, "../img/sky.jpg"));
 
-    moveRect(contxt.bitmap, -1.5f, 0.66f);  // Window spans [-2:2],[-1:1] due to Perspective()
+    GLfloat pos_x = -1.5f;
+    for (Bitmap* bmap : contxt.bmaps)
+    {
+        moveRect(bmap, pos_x, 0.66f);  // Window spans [-2:2],[-1:1] due to Perspective()
+        pos_x += 0.7f;
+    }
 
     glViewport(0, 0, contxt.width, contxt.height);
 
@@ -387,11 +395,13 @@ int main(int argc, char *argv[])
     {
         glClear ( GL_COLOR_BUFFER_BIT );
 
-        updateRect(&contxt, contxt.bitmap);
-
         ourShader.use();
 
-        drawBitmap(&contxt, contxt.bitmap);
+        for (Bitmap* bmap : contxt.bmaps)
+        {
+            updateRect(&contxt, bmap);
+            drawBitmap(&contxt, bmap);
+        }
 
         eglSwapBuffers(contxt.eglDisplay, contxt.eglSurface);
     }
