@@ -1,6 +1,9 @@
-uniform mat4 u_mvpMatrix;
 uniform float xOffset;
 uniform float yOffset;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
 attribute vec4 v_position;
 attribute vec2 a_texCoord;
@@ -9,7 +12,8 @@ varying vec2 v_texCoord;
 
 void main()
 {
-    gl_Position = vec4(v_position.x + xOffset, v_position.y + yOffset,
-                       v_position.z, 1.0) * u_mvpMatrix;
+    gl_Position = projection * view * model *
+                  vec4(v_position.x + xOffset, v_position.y + yOffset,
+                       v_position.z, 1.0f);
     v_texCoord = a_texCoord;
 }

@@ -1,5 +1,8 @@
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <stdlib.h>
 #include <iostream>
@@ -12,7 +15,6 @@
 #include <SDL_image.h>
 
 #include <shader_gles.h>
-#include <matrix_gles.h>
 
 #define ES_WINDOW_RGB           0
 #define ES_WINDOW_ALPHA         1
@@ -50,8 +52,6 @@ typedef struct _context
 {
     GLuint programObject;
 
-    Matrix mvpMatrix;
-
     std::vector<Bitmap*> bmaps;
 
     GLint width = 1280;
@@ -65,6 +65,12 @@ typedef struct _context
 
 } Context;
 
+// camera
+glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f,  0.0f);
+
+GLfloat fov = 45.0f;
 
 GLuint createTexture(const char *img_file)
 {
@@ -312,19 +318,26 @@ GLboolean userInterrupt(Context *contxt)
     return userinterrupt;
 }
 
-void updateRect(Context* contxt, Bitmap *bitmap)
+void updateView(Context* contxt)
 {
-    Matrix perspective;
-    Matrix modelview;
-    float aspect;
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 projection;
 
-    aspect = (GLfloat) contxt->width / (GLfloat) contxt->height;
+    float aspect = (GLfloat) contxt->width / (GLfloat) contxt->height;
 
-    MatrixLoadIdentity(&perspective);
-    Perspective(&perspective, 60.0f, aspect, 1.0f, 20.0f);
-    MatrixLoadIdentity(&modelview);
-    Translate(&modelview, 0.0, 0.0, -2.0);
-    MatrixMultiply(&contxt->mvpMatrix, &modelview, &perspective);
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    projection = glm::perspective(45.0f, aspect, 0.1f, 20.0f);
+
+    // Retrieve the matrix uniform locations
+    GLint modelLoc = glGetUniformLocation(contxt->programObject, "model");
+    GLint viewLoc = glGetUniformLocation(contxt->programObject, "view");
+    GLint projectLoc = glGetUniformLocation(contxt->programObject, "projection");
+
+    // Pass them to the shaders
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(projectLoc, 1, GL_FALSE, glm::value_ptr(projection));
 }
 
 void drawBitmap(Context *contxt, Bitmap *bitmap)
@@ -336,9 +349,6 @@ void drawBitmap(Context *contxt, Bitmap *bitmap)
 
     glEnableVertexAttribArray (bitmap->positionLoc);
     glEnableVertexAttribArray (bitmap->texCoordLoc);
-
-    glUniformMatrix4fv(bitmap->mvpLoc, 1, GL_FALSE,
-                       (GLfloat*) &contxt->mvpMatrix.m[0][0]);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, bitmap->textureId);
@@ -393,13 +403,14 @@ int main(int argc, char *argv[])
 
     while (userInterrupt(&contxt) == GL_FALSE)
     {
-        glClear ( GL_COLOR_BUFFER_BIT );
+        glClear(GL_COLOR_BUFFER_BIT);
 
         ourShader.use();
 
+        updateView(&contxt);
+
         for (Bitmap* bmap : contxt.bmaps)
         {
-            updateRect(&contxt, bmap);
             drawBitmap(&contxt, bmap);
         }
 
