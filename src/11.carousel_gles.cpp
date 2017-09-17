@@ -36,11 +36,12 @@ typedef struct _bitmap
 
     GLfloat *vertices;
     GLuint *indices;
-    GLfloat position[2] = {0.0f, 0.0f};
+    GLfloat position[3] = {0.0f, 0.0f, 0.0f};
     int numIndices;
 
     GLfloat xOffset;
     GLfloat yOffset;
+    GLfloat zOffset;
 
     GLint positionLoc;
     GLint texCoordLoc;
@@ -159,10 +160,11 @@ int generateRect(float scale, GLfloat **vertices, GLuint **indices)
     return numIndices;
 }
 
-void moveRect(Bitmap *bitmap, float x, float y)
+void moveRect(Bitmap *bitmap, float x, float y, float z)
 {
     bitmap->position[0] = x;
     bitmap->position[1] = y;
+    bitmap->position[2] = z;
 }
 
 EGLBoolean WinCreate(Context *contxt, const char *title)
@@ -355,6 +357,7 @@ void drawBitmap(Context *contxt, Bitmap *bitmap)
 
     glUniform1f(bitmap->xOffset, bitmap->position[0]);
     glUniform1f(bitmap->yOffset, bitmap->position[1]);
+    glUniform1f(bitmap->zOffset, bitmap->position[2]);
 
     glDrawElements(GL_TRIANGLES, bitmap->numIndices, GL_UNSIGNED_INT, bitmap->indices);
 }
@@ -375,6 +378,7 @@ Bitmap* createBitmap(Context *contxt, const char *img_file)
 
     bitmap->xOffset = glGetUniformLocation(contxt->programObject, "xOffset");
     bitmap->yOffset = glGetUniformLocation(contxt->programObject, "yOffset");
+    bitmap->zOffset = glGetUniformLocation(contxt->programObject, "zOffset");
 
    return bitmap;
 }
@@ -393,10 +397,12 @@ int main(int argc, char *argv[])
     contxt.bmaps.push_back(createBitmap(&contxt, "../img/sky.jpg"));
 
     GLfloat pos_x = -1.5f;
+    GLfloat pos_z = 0.0f;
     for (Bitmap* bmap : contxt.bmaps)
     {
-        moveRect(bmap, pos_x, 0.66f);  // Window spans [-2:2],[-1:1] due to Perspective()
+        moveRect(bmap, pos_x, 0.0f, pos_z);  // Window spans [-2:2],[-1:1] due to Perspective()
         pos_x += 0.7f;
+        pos_z += 0.9f;
     }
 
     glViewport(0, 0, contxt.width, contxt.height);

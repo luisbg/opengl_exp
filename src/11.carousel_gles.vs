@@ -1,5 +1,6 @@
 uniform float xOffset;
 uniform float yOffset;
+uniform float zOffset;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -14,6 +15,6 @@ void main()
 {
     gl_Position = projection * view * model *
                   vec4(v_position.x + xOffset, v_position.y + yOffset,
-                       v_position.z, 1.0f);
+                       v_position.z + zOffset, 1.0f);
     v_texCoord = a_texCoord;
 }
