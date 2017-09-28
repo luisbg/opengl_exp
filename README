@@ -6,6 +6,7 @@ Dependencies:
 If in debian/ubuntu:
 $ sudo apt-get install python3 ninja-build meson
 $ sudo apt-get install libglew-dev libglfw3-dev libglm-dev
+$ sudo apt-get install libsdl2-dev libsdl2-image-dev
 
 If in fedora:
 $ sudo dnf install ninja-build meson
@@ -13,6 +14,7 @@ $ sudo dnf install glew-devel glfw-devel glm-devel
 
 Build:
 $ meson build && cd build
+$ mesonconf -Dcpp_std=c++11
 $ ninja
 $ ./hello
 
